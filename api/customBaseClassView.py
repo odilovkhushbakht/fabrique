@@ -3,7 +3,7 @@ from rest_framework import generics
 from api import serializers, models
 
 
-class BaseAddUpdateClientView(generics.GenericAPIView):
+class BaseAddUpdateClient(generics.GenericAPIView):
     serializer_class = serializers.ClientSerializer
     lookup_field = 'id'
 
@@ -16,12 +16,25 @@ class BaseAddUpdateClientView(generics.GenericAPIView):
             return None
 
 
-class BaseGetDeleteUpdateClientView(BaseAddUpdateClientView):
+class BaseGetDeleteClient(BaseAddUpdateClient):
 
     def get_queryset(self):
         try:
             id = self.kwargs['id']
             client = models.ClientModel.objects.filter(pk=id).first()
             return client
+        except KeyError:
+            return None
+
+
+class BaseDeleteUpdateMailing(generics.GenericAPIView):
+    serializer_class = serializers.MailingSerializer
+    lookup_field = 'id'
+
+    def get_queryset(self):
+        try:
+            id = self.kwargs['id']
+            mailing = models.MailingModel.objects.filter(pk=id).first()
+            return mailing
         except KeyError:
             return None
