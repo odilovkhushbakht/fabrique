@@ -1,5 +1,6 @@
 import datetime
 
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics
 from rest_framework import status
 from rest_framework.generics import ListCreateAPIView
@@ -39,8 +40,9 @@ class ClientAddManyView(generics.GenericAPIView, CreateModelMixin):
     serializer_class = serializers.ClientSerializer
     queryset = models.ClientModel.objects.all()
 
+    @swagger_auto_schema(
+        operation_description="Массовая запись клиентов в формате [{\"key\":\"value\",...},{\"key\":\"value\", ...}]")
     def post(self, request):
-        print(request.data)
         serializer = serializers.ClientSerializer(data=request.data, many=True)
         if serializer.is_valid():
             serializer.save()
@@ -138,10 +140,13 @@ class MailingDeleteView(BaseDeleteUpdateMailing):
 
 class TaskRunView(generics.GenericAPIView):
 
+    @swagger_auto_schema(
+        operation_description="Чтобы запустить задачу нужно передать id рассылку(mailing).")
     def get(self, request, id):
         if id > 0:
             task_id = self.task(id=int(id))
-            return Response(data={"message": "Задача добавлена", "id": f'{task_id}'}, status=status.HTTP_200_OK)
+            if task_id != -1:
+                return Response(data={"message": "Задача добавлена", "id": f'{task_id}'}, status=status.HTTP_200_OK)
         return Response(data={"message": "Задача не добавлена"}, status=status.HTTP_400_BAD_REQUEST)
 
     def get_queryset(self):
@@ -149,16 +154,18 @@ class TaskRunView(generics.GenericAPIView):
 
     def task(self, id: int = 0):
         mailing = self.get_queryset()
-        start_task = datetime.datetime.strptime(str(mailing.start_date), "%Y-%m-%d %H:%M:%S%z")
-        finish_date = datetime.datetime.strptime(str(mailing.finish_date), "%Y-%m-%d %H:%M:%S%z")
-        soft_time_limit = int((finish_date - start_task).total_seconds())
-        base_url = env("SERVICE_SMS_BASE_URL")
-        timeout = env("SERVICE_SMS_TIMEOUT")
-        key = env("SERVICE_SMS_KEY")
-        task_id = send_data.apply_async((base_url, key, mailing.id, timeout), eta=start_task,
-                                        expires=finish_date,
-                                        soft_time_limit=soft_time_limit)
-        return task_id
+        if mailing:
+            start_task = datetime.datetime.strptime(str(mailing.start_date), "%Y-%m-%d %H:%M:%S%z")
+            finish_date = datetime.datetime.strptime(str(mailing.finish_date), "%Y-%m-%d %H:%M:%S%z")
+            soft_time_limit = int((finish_date - start_task).total_seconds())
+            base_url = env("SERVICE_SMS_BASE_URL")
+            timeout = env("SERVICE_SMS_TIMEOUT")
+            key = env("SERVICE_SMS_KEY")
+            task_id = send_data.apply_async((base_url, key, mailing.id, timeout), eta=start_task,
+                                            expires=finish_date,
+                                            soft_time_limit=soft_time_limit)
+            return task_id
+        return -1
 
 
 class TaskAbortView(generics.GenericAPIView):
