@@ -7,7 +7,7 @@ class ClientModel(models.Model):
     phone = models.CharField(default=79999999999, max_length=11)
     operator_code = models.IntegerField(default=919)
     tag = models.CharField(max_length=20, default='tag')
-    time_zone = models.CharField(default='UTC', max_length=10)
+    time_zone = models.CharField(default='Europe/Moscow', max_length=100)
 
 
 class MailingModel(models.Model):
@@ -23,3 +23,4 @@ class MessageModel(models.Model):
     sent = models.DateTimeField(default=timezone.now)
     client_num = models.IntegerField(default=0)
     mailing_num = models.IntegerField(default=0)
+    status = models.CharField(default="Отправлено", max_length=50)

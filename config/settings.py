@@ -40,7 +40,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'drf_yasg',
     'api',
+    'django_celery_beat',
 ]
 
 MIDDLEWARE = [
@@ -125,9 +127,25 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+# CSRF_COOKIE_SECURE = False
+
 API_KEY = env('API_KEY')
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE': 2
 }
+
+CELERY_TIMEZONE = env('CELERY_TIMEZONE')
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60
+CELERY_BROKER_URL = "redis://redis:6379/0"
+
+MESSAGE_SUCCESS = "Отправлено"
+MESSAGE_UNSUCCESS = "Не отправлено"
+MESSAGE_CREATED = "Создано"
+
+TASK_FINISHED = "Задача завершена."
+TASK_TIME_AND_GLASS = "Время задачи истекло."
+CLIENT_LIST_EMPTY = "Список клиент пуст."
+MAILING_LIST_EMPTY = "Список сообщение пуст."

@@ -1,5 +1,9 @@
 django
 djangorestframework
+drf_yasg
 django-environ
 psycopg2-binary
-django-rest-swagger
+celery
+django-celery-beat
+redis
+aiohttp
